@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System</title>
+    <style>
+       
+    </style>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="menu-header">≡ Menu</div>
+            <div class="menu-item">Dashboard</div>
+            <div class="menu-item">Employees</div>
+            <div class="menu-item">Shifts</div>
+            <div class="menu-item active">Reports</div>
+        </div>
+
+        <div class="header">
+            Employee Management System
+        </div>
+
+        <div class="content">
+            
+            <!-- Add New Report Section -->
+             <form id="add-report-form">
+                <div class="report-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Add New Report</h2>
+                        <span class="collapse-icon">▼</span>
+                    </div>
+                    <div class="section-divider"></div>
+                    <div class="section-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Report To</label>
+                                <select name="manager" class="form-select">
+                                    <option>--Select Manager--</option>
+                                    <option>Manager 1</option>
+                                    <option>Manager 2</option>
+                                    <option>Manager 3</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Method</label>
+                                <select name="method" class="form-select">
+                                    <option>--Select Method--</option>
+                                    <option>Direct</option>
+                                    <option>Indirect</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">SUBMIT</button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Copy Report Section -->
+             <form id="copy-report-form">
+                <div class="report-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Copy Report</h2>
+                        <span class="collapse-icon" style="transform: rotate(0deg)">▼</span>
+                    </div>
+                    <div class="section-divider" style="display: none;"></div>
+                    <div class="section-content" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Transfer To</label>
+                                <select name="employee" class="form-select">
+                                    <option>--Select Employee--</option>
+                                    <option>Employee 1</option>
+                                    <option>Employee 2</option>
+                                    <option>Employee 3</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Report To</label>
+                                <select name="manager" class="form-select">
+                                    <option>--Select Manager--</option>
+                                    <option>Manager 1</option>
+                                    <option>Manager 2</option>
+                                    <option>Manager 3</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Method</label>
+                                <select name="method" class="form-select">
+                                    <option>--Select Method--</option>
+                                    <option>Direct</option>
+                                    <option>Indirect</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-secondary">SUBMIT</button>
+                    </div>
+                </div>
+            </form>
+
+
+           <!-- Search Container -->
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-box" placeholder="Search...">
+            </div>
+
+
+            
+            <!-- Employee Details Container -->
+             <div class="employee-container" id="employeeTable">
+                <div class="employee-header">
+                    <h2>Employees</h2>
+                    <button class="download-btn"> ⤓ Download Report</button>
+                </div>
+                <div class="section-divider"></div>
+                <div class="records-info"><span id="record-count">Records found: 0</span></div>
+                <div class="table-container">
+                    <table class="employee-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" class="checkbox"></th>
+                                <th>Sl No</th>
+                                <th>Employee ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Department</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="checkbox" class="checkbox"></td>
+                                <td>1</td>
+                                <td class="employee-id">0001</td>
+                                <td>Admin</td>
+                                <td>AWGTC</td>
+                                <td>ABC</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="checkbox"></td>
+                                <td>2</td>
+                                <td class="employee-id">0002</td>
+                                <td>Admin 1</td>
+                                <td>AWGTC (1)</td>
+                                <td>ABC</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="checkbox"></td>
+                                <td>3</td>
+                                <td class="employee-id">0003</td>
+                                <td>Emp</td>
+                                <td>Loy</td>
+                                <td>abc</td>
+                            </tr>
+                            <!-- More employee data can be added here -->
+                             
+                             <script>
+                             document.addEventListener("DOMContentLoaded", function () {
+                                const searchInput = document.getElementById("searchInput");
+                                const table = document.getElementById("employeeTable");
+                                const recordCount = document.getElementById("record-count");
+                                
+                                // Reference to the "no records" message element
+                                const noRecordsMessage = document.getElementById("no-records");
+                                function updateTableAndCount() {
+                                    const searchValue = searchInput.value.toLowerCase();
+                                    const rows = table.querySelectorAll("tbody tr");
+                                    let visibleCount = 0;
+                                    rows.forEach(row => {
+                                        const rowText = row.textContent.toLowerCase();
+                                        const match = rowText.includes(searchValue);
+                                        if (match) {
+                                            row.style.display = "";
+                                            visibleCount++;
+                                        } else {
+                                            row.style.display = "none";
+                                        }
+                                    });
+                                    recordCount.textContent = `(${visibleCount})Records found`;
+                                    
+                                    // Show or hide the "No records found" message
+                                    if (noRecordsMessage) {
+                                        noRecordsMessage.style.display = visibleCount === 0 ? "block" : "none";
+                                    }
+                                }
+                                
+                                updateTableAndCount(); // Initial call
+                                searchInput.addEventListener("input", updateTableAndCount);
+                                });
+                            </script>
+
+                        </tbody>
+                    </table>
+                    <div id="no-records" class="empty-state" style="display: none;">
+                        <div class="empty-state-icon">😕</div>
+                        <div>No records found.</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <script>
+    // Add interactivity for collapsible sections
+    document.querySelectorAll('.section-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const icon = this.querySelector('.collapse-icon');
+            const divider = this.nextElementSibling
+            const content = divider.nextElementSibling;
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                divider.style.display= 'block';
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.style.display = 'none';
+                divider.style.display= 'none';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        });
+    });
+
+
+    // Add hover effects for menu items
+    document.querySelectorAll('.menu-item:not(.active)').forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelector('.menu-item.active').classList.remove('active');
+            this.classList.add('active');
+        });
+    });
+    
+
+    // Employee table functionality
+    // Select all checkbox functionality with row highlighting
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const rowCheckboxes = document.querySelectorAll('.employee-table tbody input[type="checkbox"]');
+    
+    selectAllCheckbox.addEventListener('change', function () {
+        rowCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+            const row = checkbox.closest('tr');
+            if (this.checked) {
+                row.classList.add('selected');
+            } else {
+                row.classList.remove('selected');
+            }
+        });
+    });
+
+
+    // Individual checkbox functionality for row highlighting
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            const row = this.closest('tr');
+            if (this.checked) {
+                row.classList.add('selected');
+            } else {
+                row.classList.remove('selected');
+            }
+            
+            // Update the "Select All" checkbox status
+            const allChecked = Array.from(rowCheckboxes).every(cb => cb.checked);
+            selectAllCheckbox.checked = allChecked;
+        });
+    });
+    
+    
+    // Run on page load
+    window.addEventListener('DOMContentLoaded', updateRecordsCount);
+    
+    function getSelectedEmployeeIDs() {
+        const selected = [];
+        document.querySelectorAll('.employee-table tbody input[type="checkbox"]:checked').forEach(cb => {
+            const row = cb.closest('tr');
+            const empId = row.querySelector('.employee-id');
+            if (empId) selected.push(empId.textContent.trim());
+        });
+        return selected;
+    }
+    
+    document.getElementById('add-report-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const employees = getSelectedEmployeeIDs();
+        const manager = this.querySelector('select[name="manager"]').value;
+        const method = this.querySelector('select[name="method"]').value;
+        
+        console.log('Submitting Add Report:', { manager, method, employees });
+        
+        // TODO: Send to backend using fetch or XMLHttpRequest
+        alert('Add Report submitted with: ' + JSON.stringify({ manager, method, employees }));
+    });
+    
+    document.getElementById('copy-report-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const employees = getSelectedEmployeeIDs();
+        const manager = this.querySelector('select[name="manager"]').value;
+        const newmanager= this.querySelector('select[name="employee"]').value;
+        const method = this.querySelector('select[name="method"]').value;
+        
+        console.log('Submitting Copy Report:', { newmanager, manager, method, employees });
+        
+        // TODO: Send to backend using fetch or XMLHttpRequest
+        alert('Copy Report submitted with: ' + JSON.stringify({ newmanager, manager, method, employees }));
+    });
+    
+   
+
+    </script>
+   <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const rows = document.querySelectorAll(".employee-table tbody tr");
+    const selectAll = document.getElementById("selectAll");
+
+    function updateRowHighlight(checkbox) {
+        const row = checkbox.closest("tr");
+        row.classList.toggle("selected", checkbox.checked);
+    }
+
+    // Row click event (except checkbox)
+    rows.forEach(row => {
+        const checkbox = row.querySelector("input[type='checkbox']");
+        
+        row.addEventListener("click", function (e) {
+            if (e.target.type !== "checkbox") {
+                checkbox.checked = !checkbox.checked;
+                updateRowHighlight(checkbox);
+            }
+        });
+
+        checkbox.addEventListener("click", function (e) {
+            e.stopPropagation(); // Prevent double-toggle from row click
+            updateRowHighlight(checkbox);
+        });
+    });
+
+    // Select All logic
+    selectAll.addEventListener("change", function () {
+        const checkboxes = document.querySelectorAll(".employee-table tbody input[type='checkbox']");
+        checkboxes.forEach(cb => {
+            cb.checked = this.checked;
+            updateRowHighlight(cb);
+        });
+    });
+});
+</script>
+
+
+
+
+</html>
