@@ -234,85 +234,11 @@
         });
     });
     
-
-    // Employee table functionality
-    // Select all checkbox functionality with row highlighting
-    const selectAllCheckbox = document.getElementById('selectAll');
-    const rowCheckboxes = document.querySelectorAll('.employee-table tbody input[type="checkbox"]');
-    
-    selectAllCheckbox.addEventListener('change', function () {
-        rowCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
-            const row = checkbox.closest('tr');
-            if (this.checked) {
-                row.classList.add('selected');
-            } else {
-                row.classList.remove('selected');
-            }
-        });
-    });
-
-
-    // Individual checkbox functionality for row highlighting
-    rowCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            const row = this.closest('tr');
-            if (this.checked) {
-                row.classList.add('selected');
-            } else {
-                row.classList.remove('selected');
-            }
-            
-            // Update the "Select All" checkbox status
-            const allChecked = Array.from(rowCheckboxes).every(cb => cb.checked);
-            selectAllCheckbox.checked = allChecked;
-        });
-    });
-    
-    
-    // Run on page load
-    window.addEventListener('DOMContentLoaded', updateRecordsCount);
-    
-    function getSelectedEmployeeIDs() {
-        const selected = [];
-        document.querySelectorAll('.employee-table tbody input[type="checkbox"]:checked').forEach(cb => {
-            const row = cb.closest('tr');
-            const empId = row.querySelector('.employee-id');
-            if (empId) selected.push(empId.textContent.trim());
-        });
-        return selected;
-    }
-    
-    document.getElementById('add-report-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const employees = getSelectedEmployeeIDs();
-        const manager = this.querySelector('select[name="manager"]').value;
-        const method = this.querySelector('select[name="method"]').value;
-        
-        console.log('Submitting Add Report:', { manager, method, employees });
-        
-        // TODO: Send to backend using fetch or XMLHttpRequest
-        alert('Add Report submitted with: ' + JSON.stringify({ manager, method, employees }));
-    });
-    
-    document.getElementById('copy-report-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const employees = getSelectedEmployeeIDs();
-        const manager = this.querySelector('select[name="manager"]').value;
-        const newmanager= this.querySelector('select[name="employee"]').value;
-        const method = this.querySelector('select[name="method"]').value;
-        
-        console.log('Submitting Copy Report:', { newmanager, manager, method, employees });
-        
-        // TODO: Send to backend using fetch or XMLHttpRequest
-        alert('Copy Report submitted with: ' + JSON.stringify({ newmanager, manager, method, employees }));
-    });
-    
-   
-
     </script>
+
+    
    <script>
-document.addEventListener("DOMContentLoaded", function () {
+   document.addEventListener("DOMContentLoaded", function () {
     const rows = document.querySelectorAll(".employee-table tbody tr");
     const selectAll = document.getElementById("selectAll");
 
@@ -349,7 +275,122 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
+    
+<script>
+function getSelectedEmployeeDetails() {
+    const selected = [];
+    document.querySelectorAll('.employee-table tbody input[type="checkbox"]:checked').forEach(cb => {
+        const row = cb.closest('tr');
+        const name = row.children[3].textContent.trim();
+        const dept = row.children[5].textContent.trim();
+        const id = row.querySelector('.employee-id').textContent.trim();
+        selected.push(`${id}|${name} (${dept})`);
+
+    });
+    return selected;
+}
+
+function showModal(type, data) {
+    const modal = document.getElementById("confirmationModal");
+    const body = document.getElementById("modal-body");
+    const title = document.getElementById("modal-title");
+    const submitBtn = document.getElementById("modal-submit");
+
+    title.textContent = type === "add" ? "Confirm Add Reporties" : "Confirm Copy Report";
+
+    // Build the table HTML
+    let tableRows = data.employees.map(emp => {
+        const [idPart, rest] = emp.split('|');
+        const [name, dept] = rest.split('(');
+        return `<tr>
+            <td>${idPart}</td>
+            <td>${name.trim()}</td>
+            <td>${dept.replace(')', '').trim()}</td>
+        </tr>`;
+    }).join(""); 
 
 
+    const tableHTML = `<table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f2f2f2;">
+                <th style="padding: 8px; text-align: left;">ID</th>
+                <th style="padding: 8px; text-align: left;">Employee Name</th>
+                <th style="padding: 8px; text-align: left;">Department</th>
+                </tr>
+        </thead>
+        <tbody>
+            ${tableRows}
+        </tbody>
+    </table>`;
 
+    // Compose full modal content
+    body.innerHTML = `
+        <p><strong>Report To:</strong> ${data.manager}</p>
+        ${type === "copy" ? `<p><strong>Transfer To:</strong> ${data.newmanager}</p>` : ""}
+        <p><strong>Method:</strong> ${data.method}</p>
+        <p><strong>Selected Employees:</strong></p>
+        ${tableHTML}
+    `;
+
+    modal.style.display = "flex";
+
+    submitBtn.onclick = function() {
+        modal.style.display = "none";
+        let alertMsg = `Submission Successful (${type === "add" ? "Add Reporties" : "Copy Report"})\n`;
+        alertMsg += `Report To: ${data.manager}\n`;
+        if (type === "copy") alertMsg += `Transfer To: ${data.newmanager}\n`;
+        alertMsg += `Method: ${data.method}\n`;
+        alertMsg += `Selected Employees:\n${data.employees.join("\n")}`;
+        alert(alertMsg);
+    };
+
+    document.getElementById("modal-cancel").onclick = () => {
+        modal.style.display = "none";
+    };
+}
+
+
+document.getElementById('add-report-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const employees = getSelectedEmployeeDetails();
+    const manager = this.querySelector('select[name="manager"]').value;
+    const method = this.querySelector('select[name="method"]').value;
+
+    if (!manager || !method || employees.length === 0) {
+        alert("Please fill all fields and select at least one employee.");
+        return;
+    }
+
+    showModal("add", { manager, method, employees });
+});
+
+document.getElementById('copy-report-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const employees = getSelectedEmployeeDetails();
+    const newmanager = this.querySelector('select[name="employee"]').value;
+    const manager = this.querySelector('select[name="manager"]').value;
+    const method = this.querySelector('select[name="method"]').value;
+
+    if (!newmanager || !manager || !method || employees.length === 0) {
+        alert("Please fill all fields and select at least one employee.");
+        return;
+    }
+
+    showModal("copy", { manager, method, newmanager, employees });
+});
+</script>
+
+<!-- Confirmation Modal -->
+<div id="confirmationModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button id="modal-submit" class="btn btn-primary">Submit</button>
+      <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+</body>
 </html>
