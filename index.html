@@ -7,7 +7,7 @@
     <style>
        
     </style>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
     <div class="main-content">
@@ -46,11 +46,10 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Method</label>
-                                <select name="method" class="form-select">
-                                    <option>--Select Method--</option>
-                                    <option>Direct</option>
-                                    <option>Indirect</option>
+                                <select name="method" class="form-select" id="methodDropdown">
+                                    <option value="">--Select Method--</option>
                                 </select>
+
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary">SUBMIT</button>
@@ -70,11 +69,8 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Transfer To</label>
-                                <select name="employee" class="form-select">
-                                    <option>--Select Employee--</option>
-                                    <option>Employee 1</option>
-                                    <option>Employee 2</option>
-                                    <option>Employee 3</option>
+                                <select id="transferDropdown" name="employee" class="form-select">
+                                    <option value="">--Select Employee--</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -90,12 +86,11 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Method</label>
-                                <select name="method" class="form-select">
-                                    <option>--Select Method--</option>
-                                    <option>Direct</option>
-                                    <option>Indirect</option>
+                                <select name="method" class="form-select" id="copyMethodDropdown">
+                                    <option value="">--Select Method--</option>
                                 </select>
                             </div>
+
                         </div>
                         <button type="submit" class="btn btn-secondary">SUBMIT</button>
                     </div>
@@ -119,10 +114,10 @@
                 <div class="section-divider"></div>
                 <div class="records-info"><span id="record-count">Records found: 0</span></div>
                 <div class="table-container">
-                    <table class="employee-table">
+                    <table class="employee-table" id="employeeTable">
                         <thead>
                             <tr>
-                                <th><input type="checkbox" id="selectAll" class="checkbox"></th>
+                                <th><input type="checkbox" id="selectAll"></th>
                                 <th>Sl No</th>
                                 <th>Employee ID</th>
                                 <th>First Name</th>
@@ -131,34 +126,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td><input type="checkbox" class="checkbox"></td>
-                                <td>1</td>
-                                <td class="employee-id">0001</td>
-                                <td>Admin</td>
-                                <td>AWGTC</td>
-                                <td>ABC</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="checkbox"></td>
-                                <td>2</td>
-                                <td class="employee-id">0002</td>
-                                <td>Admin 1</td>
-                                <td>AWGTC (1)</td>
-                                <td>ABC</td>
-                            </tr>
-                            <tr>
-                                <td><input type="checkbox" class="checkbox"></td>
-                                <td>3</td>
-                                <td class="employee-id">0003</td>
-                                <td>Emp</td>
-                                <td>Loy</td>
-                                <td>abc</td>
-                            </tr>
-                            <!-- More employee data can be added here -->
-                             
-                             <script>
-                             document.addEventListener("DOMContentLoaded", function () {
+                            <script>
+                            document.addEventListener("DOMContentLoaded", function () {
                                 const searchInput = document.getElementById("searchInput");
                                 const table = document.getElementById("employeeTable");
                                 const recordCount = document.getElementById("record-count");
@@ -179,7 +148,7 @@
                                             row.style.display = "none";
                                         }
                                     });
-                                    recordCount.textContent = `(${visibleCount})Records found`;
+                                    recordCount.textContent = 'Records found'($,{visibleCount});
                                     
                                     // Show or hide the "No records found" message
                                     if (noRecordsMessage) {
@@ -189,9 +158,9 @@
                                 
                                 updateTableAndCount(); // Initial call
                                 searchInput.addEventListener("input", updateTableAndCount);
-                                });
+                            
+                            });
                             </script>
-
                         </tbody>
                     </table>
                     <div id="no-records" class="empty-state" style="display: none;">
@@ -206,191 +175,288 @@
     
     
     <script>
-    // Add interactivity for collapsible sections
-    document.querySelectorAll('.section-header').forEach(header => {
-        header.addEventListener('click', function() {
-            const icon = this.querySelector('.collapse-icon');
-            const divider = this.nextElementSibling
-            const content = divider.nextElementSibling;
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("searchInput");
+        const tableBody = document.querySelector("#employeeTable tbody");
+        const recordCount = document.getElementById("record-count");
+        const noRecords = document.getElementById("no-records");
+        const methodDropdown = [document.getElementById("methodDropdown"), document.getElementById("copyMethodDropdown")];
+        const transferDropdown = document.getElementById("transferDropdown");
+        
+        // ✅ Load methods into dropdown
+        if (methodDropdown) {
+            const methodDropdowns = [document.getElementById("methodDropdown"), document.getElementById("copyMethodDropdown")];
             
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                divider.style.display= 'block';
-                icon.style.transform = 'rotate(180deg)';
-            } else {
-                content.style.display = 'none';
-                divider.style.display= 'none';
-                icon.style.transform = 'rotate(0deg)';
-            }
+            fetch('/api/methods')
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.json();
+            })
+            
+            .then(data => {
+                console.log("Fetched methods:", data);
+                if (Array.isArray(data) && data.length > 0) {
+                    methodDropdowns.forEach(dropdown => {
+                        if (dropdown) {
+                            data.forEach(method => {
+                                const option = document.createElement("option");
+                                option.value = method.Method;
+                                option.textContent = method.Method;
+                                dropdown.appendChild(option.cloneNode(true)); // clone to preserve content
+                            });
+                        }
+                    });
+                } else {
+                    console.warn("No methods found in response.");
+                }
+            })
+            .catch(err => {
+                console.error("Error fetching methods:", err);
+            });
+        }
+        
+        // ✅ Load employee data
+        fetch('/api/employees')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach((emp, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td><input type="checkbox"></td>
+                    <td>${index + 1}</td>
+                    <td class="employee-id">${emp.Emp_ID}</td>
+                    <td>${emp.First_Name}</td>
+                    <td>${emp.Last_Name}</td>
+                    <td>${emp.Name}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            attachRowClickEvents();
+            updateSearch();
+            searchInput.addEventListener("input", updateSearch);
+        })
+        .catch(err => {
+            console.error("Error loading employee data:", err);
+            noRecords.style.display = "block";
+            noRecords.textContent = "Error fetching data from backend.";
         });
-    });
 
 
-    // Add hover effects for menu items
-    document.querySelectorAll('.menu-item:not(.active)').forEach(item => {
-        item.addEventListener('click', function() {
-            document.querySelector('.menu-item.active').classList.remove('active');
-            this.classList.add('active');
+        //✅ Load Employee into dropdown
+        if (transferDropdown) {
+            fetch("/api/employee-names")
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(emp => {
+                    const option = document.createElement("option");
+                    option.value = emp.Emp_ID;
+                    option.textContent = `${emp.Emp_ID} ${emp.First_Name} ${emp.Last_Name}`;
+                    transferDropdown.appendChild(option);
+                });
+            })
+            .catch(err => {
+                console.error("Error fetching employee names:", err);
+            });
+        }
+        
+        // ✅ Employee row click & highlight logic
+        function attachRowClickEvents() {
+            const rows = document.querySelectorAll(".employee-table tbody tr");
+            const selectAll = document.getElementById("selectAll");
+            
+            function updateRowHighlight(checkbox) {
+                const row = checkbox.closest("tr");
+                row.classList.toggle("selected", checkbox.checked);
+            }
+            
+            rows.forEach(row => {
+                const checkbox = row.querySelector("input[type='checkbox']");
+                row.addEventListener("click", function (e) {
+                    if (e.target.type !== "checkbox") {
+                        checkbox.checked = !checkbox.checked;
+                        updateRowHighlight(checkbox);
+                    }
+                });
+                
+                checkbox.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    updateRowHighlight(checkbox);
+                });
+            });
+            
+            if (selectAll) {
+                selectAll.addEventListener("change", function () {
+                    const checkboxes = document.querySelectorAll(".employee-table tbody input[type='checkbox']");
+                    checkboxes.forEach(cb => {
+                        cb.checked = this.checked;
+                        updateRowHighlight(cb);
+                    });
+                });
+            }
+        }
+        
+        // ✅ Search filter
+        function updateSearch() {
+            const searchValue = searchInput.value.toLowerCase();
+            let visibleCount = 0;
+            const rows = tableBody.querySelectorAll("tr");
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const match = text.includes(searchValue);
+                row.style.display = match ? "" : "none";
+                if (match) visibleCount++;
+            });
+            
+            recordCount.textContent = `Records found: ${visibleCount}`;
+            noRecords.style.display = visibleCount === 0 ? "block" : "none";
+        }
+        
+        // ✅ Collapsible sections
+        document.querySelectorAll('.section-header').forEach(header => {
+            header.addEventListener('click', function () {
+                const icon = this.querySelector('.collapse-icon');
+                const divider = this.nextElementSibling;
+                const content = divider.nextElementSibling;
+                
+                const isHidden = content.style.display === 'none';
+                content.style.display = isHidden ? 'block' : 'none';
+                divider.style.display = isHidden ? 'block' : 'none';
+                icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+        });
+        
+        // ✅ Sidebar menu highlight
+        document.querySelectorAll('.menu-item:not(.active)').forEach(item => {
+            item.addEventListener('click', function () {
+                document.querySelector('.menu-item.active').classList.remove('active');
+                this.classList.add('active');
+            });
+        });
+        
+        // ✅ Form submission handlers
+        function getSelectedEmployeeDetails() {
+            const selected = [];
+            document.querySelectorAll('.employee-table tbody input[type="checkbox"]:checked').forEach(cb => {
+                const row = cb.closest('tr');
+                const name = row.children[3].textContent.trim();
+                const dept = row.children[5].textContent.trim();
+                const id = row.querySelector('.employee-id').textContent.trim();
+                selected.push(`${id}|${name} (${dept})`);
+            });
+            return selected;
+        }
+        
+        function showModal(type, data) {
+            const modal = document.getElementById("confirmationModal");
+            const body = document.getElementById("modal-body");
+            const title = document.getElementById("modal-title");
+            const submitBtn = document.getElementById("modal-submit");
+            
+            title.textContent = type === "add" ? "Confirm Add Reporties" : "Confirm Copy Report";
+            const tableRows = data.employees.map(emp => {
+                const [idPart, rest] = emp.split('|');
+                const [name, dept] = rest.split('(');
+                return `<tr>
+                    <td style="text-align: center;">${idPart}</td>
+                    <td style="text-align: center;">${name.trim()}</td>
+                    <td style="text-align: center;">${dept.replace(')', '').trim()}</td>
+                    </tr>`;
+            }).join("");
+            
+            const tableHTML = `<table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="padding: 8px; text-align: center;">ID</th>
+                        <th style="padding: 8px; text-align: center;">Employee Name</th>
+                        <th style="padding: 8px; text-align: center;">Department</th>
+                    </tr>
+                </thead>
+                <tbody>${tableRows}</tbody>
+            </table>`;
+            
+            body.innerHTML = `
+            <p><strong>Report To:</strong> ${data.manager}</p>
+            ${type === "copy" ? `<p><strong>Transfer To:</strong> ${data.newmanager}</p>` : ""}
+            <p><strong>Method:</strong> ${data.method}</p>
+            <p><strong>Selected Employees:</strong></p>
+            ${tableHTML}`;
+            
+            modal.style.display = "flex";
+            
+            submitBtn.onclick = async function () {
+                modal.style.display = "none";
+                const payload = {
+                    type,
+                    manager: data.manager,
+                    method: data.method,
+                    employees: data.employees
+                };
+                
+                if (type === "copy") {
+                    payload.newmanager = data.newmanager;
+                }
+                
+                try {
+                    const response = await fetch('/submit-report', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const result = await response.json();
+                    alert(result.message || "Submission successful!");
+                } catch (error) {
+                    alert("Network error. Please try again later.");
+                    console.error("AJAX error:", error);
+                }
+            };
+            document.getElementById("modal-cancel").onclick = () => {
+                modal.style.display = "none";
+            };
+        }
+        
+        // Add form submit listeners
+        document.getElementById('add-report-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const employees = getSelectedEmployeeDetails();
+            const manager = this.querySelector('select[name="manager"]').value;
+            const method = this.querySelector('select[name="method"]').value;
+            if (!manager || !method || employees.length === 0) {
+                alert("Please fill all fields and select at least one employee.");
+                return;
+            }
+            showModal("add", { manager, method, employees });
+        });
+        
+        document.getElementById('copy-report-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const employees = getSelectedEmployeeDetails();
+            const newmanager = this.querySelector('select[name="employee"]').value;
+            const manager = this.querySelector('select[name="manager"]').value;
+            const method = this.querySelector('select[name="method"]').value;
+            if (!newmanager || !manager || !method || employees.length === 0) {
+                alert("Please fill all fields and select at least one employee.");
+                return;
+            }
+            showModal("copy", { manager, method, newmanager, employees });
         });
     });
     
     </script>
-
     
-   <script>
-   document.addEventListener("DOMContentLoaded", function () {
-    const rows = document.querySelectorAll(".employee-table tbody tr");
-    const selectAll = document.getElementById("selectAll");
-
-    function updateRowHighlight(checkbox) {
-        const row = checkbox.closest("tr");
-        row.classList.toggle("selected", checkbox.checked);
-    }
-
-    // Row click event (except checkbox)
-    rows.forEach(row => {
-        const checkbox = row.querySelector("input[type='checkbox']");
-        
-        row.addEventListener("click", function (e) {
-            if (e.target.type !== "checkbox") {
-                checkbox.checked = !checkbox.checked;
-                updateRowHighlight(checkbox);
-            }
-        });
-
-        checkbox.addEventListener("click", function (e) {
-            e.stopPropagation(); // Prevent double-toggle from row click
-            updateRowHighlight(checkbox);
-        });
-    });
-
-    // Select All logic
-    selectAll.addEventListener("change", function () {
-        const checkboxes = document.querySelectorAll(".employee-table tbody input[type='checkbox']");
-        checkboxes.forEach(cb => {
-            cb.checked = this.checked;
-            updateRowHighlight(cb);
-        });
-    });
-});
-</script>
-
-    
-<script>
-function getSelectedEmployeeDetails() {
-    const selected = [];
-    document.querySelectorAll('.employee-table tbody input[type="checkbox"]:checked').forEach(cb => {
-        const row = cb.closest('tr');
-        const name = row.children[3].textContent.trim();
-        const dept = row.children[5].textContent.trim();
-        const id = row.querySelector('.employee-id').textContent.trim();
-        selected.push(`${id}|${name} (${dept})`);
-
-    });
-    return selected;
-}
-
-function showModal(type, data) {
-    const modal = document.getElementById("confirmationModal");
-    const body = document.getElementById("modal-body");
-    const title = document.getElementById("modal-title");
-    const submitBtn = document.getElementById("modal-submit");
-
-    title.textContent = type === "add" ? "Confirm Add Reporties" : "Confirm Copy Report";
-
-    // Build the table HTML
-    let tableRows = data.employees.map(emp => {
-        const [idPart, rest] = emp.split('|');
-        const [name, dept] = rest.split('(');
-        return `<tr>
-            <td>${idPart}</td>
-            <td>${name.trim()}</td>
-            <td>${dept.replace(')', '').trim()}</td>
-        </tr>`;
-    }).join(""); 
-
-
-    const tableHTML = `<table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="background-color: #f2f2f2;">
-                <th style="padding: 8px; text-align: left;">ID</th>
-                <th style="padding: 8px; text-align: left;">Employee Name</th>
-                <th style="padding: 8px; text-align: left;">Department</th>
-                </tr>
-        </thead>
-        <tbody>
-            ${tableRows}
-        </tbody>
-    </table>`;
-
-    // Compose full modal content
-    body.innerHTML = `
-        <p><strong>Report To:</strong> ${data.manager}</p>
-        ${type === "copy" ? `<p><strong>Transfer To:</strong> ${data.newmanager}</p>` : ""}
-        <p><strong>Method:</strong> ${data.method}</p>
-        <p><strong>Selected Employees:</strong></p>
-        ${tableHTML}
-    `;
-
-    modal.style.display = "flex";
-
-    submitBtn.onclick = function() {
-        modal.style.display = "none";
-        let alertMsg = `Submission Successful (${type === "add" ? "Add Reporties" : "Copy Report"})\n`;
-        alertMsg += `Report To: ${data.manager}\n`;
-        if (type === "copy") alertMsg += `Transfer To: ${data.newmanager}\n`;
-        alertMsg += `Method: ${data.method}\n`;
-        alertMsg += `Selected Employees:\n${data.employees.join("\n")}`;
-        alert(alertMsg);
-    };
-
-    document.getElementById("modal-cancel").onclick = () => {
-        modal.style.display = "none";
-    };
-}
-
-
-document.getElementById('add-report-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const employees = getSelectedEmployeeDetails();
-    const manager = this.querySelector('select[name="manager"]').value;
-    const method = this.querySelector('select[name="method"]').value;
-
-    if (!manager || !method || employees.length === 0) {
-        alert("Please fill all fields and select at least one employee.");
-        return;
-    }
-
-    showModal("add", { manager, method, employees });
-});
-
-document.getElementById('copy-report-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const employees = getSelectedEmployeeDetails();
-    const newmanager = this.querySelector('select[name="employee"]').value;
-    const manager = this.querySelector('select[name="manager"]').value;
-    const method = this.querySelector('select[name="method"]').value;
-
-    if (!newmanager || !manager || !method || employees.length === 0) {
-        alert("Please fill all fields and select at least one employee.");
-        return;
-    }
-
-    showModal("copy", { manager, method, newmanager, employees });
-});
-</script>
-
-<!-- Confirmation Modal -->
-<div id="confirmationModal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <h3 id="modal-title"></h3>
-    <div id="modal-body"></div>
-    <div class="modal-actions">
-      <button id="modal-submit" class="btn btn-primary">Submit</button>
-      <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+    <!-- Confirmation Modal -->
+     <div id="confirmationModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modal-title"></h3>
+            <div id="modal-body"></div>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+                <button id="modal-submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
 </body>
 </html>
