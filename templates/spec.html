@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machine Code Table</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 10px;
+        }
+        
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            width: 90%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        table {
+            width: 90%; /* Reduced from 100% to 90% */
+            max-width: 800px; /* Added max-width to limit table width */
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #FFFF00;
+            color: #000;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        td {
+            background-color: #FFFFFF;
+        }
+        input, select {
+            width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .link-btn {
+            background-color: #848076;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            width: 100%;
+        }
+        .link-btn:hover {
+            background-color: #787168;
+        }
+        .remove-btn {
+            background-color: #f44336;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .remove-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        /* Responsive adjustments */
+        @media screen and (max-width: 1024px) {
+            body {
+                padding: 8px;
+            }
+            .brand-name {
+                font-size: 18px;
+            }
+            button {
+                padding: 6px 10px;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            h2 {
+                font-size: 16px;
+            }
+            .brand-name {
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+            th, td {
+                padding: 6px;
+                font-size: 14px;
+            }
+            input, select, button {
+                font-size: 12px;
+            }
+        }
+        
+        /* Special optimization for 1024x600 resolution */
+        @media screen and (max-width: 1024px) and (max-height: 600px) {
+            body {
+                padding: 5px;
+            }
+            h2 {
+                margin-top: 5px;
+                margin-bottom: 3px;
+            }
+            .brand-name {
+                margin-bottom: 8px;
+            }
+            table {
+                margin-bottom: 8px;
+            }
+            th, td {
+                padding: 5px;
+            }
+            button {
+                padding: 5px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+    
+    
+    <form method="GET" action="{{ url_for('machine_dashboard') }}">
+        <div class="table-container">
+            <table id="machineTable">
+            <thead>
+                <tr>
+                    <th>Machine</th>
+                    <th>Code</th>
+                    <th>Link</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <input type="text" name="machine[]" list="machineList" required>
+                        <datalist id="machineList">
+                            {% for machine in machines %}
+                                <option value="{{ machine }}">
+                            {% endfor %}
+                        </datalist>
+                    </td>
+                    <td><input type="text" name="code[]" placeholder="Enter code" required></td>
+                    <td id="link0">
+                        <div>-</div>
+                        <button type="button" class="link-btn" onclick="generateLink(0)">Generate Link</button>
+                    </td>
+                    <td>
+                        <button type="button" class="remove-btn" onclick="removeRow(this)"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+        
+        <div class="button-container">
+            <button type="button" onclick="addRow()">Add </button>
+            
+        </div>
+    </form>
+    </div>
+
+    <script>
+        // Counter for unique row IDs
+        let rowCount = 1;
+        
+        // Function to add a new row
+        function addRow() {
+            const tbody = document.querySelector('#machineTable tbody');
+            const newRow = document.createElement('tr');
+            
+            newRow.innerHTML = `
+                <td>
+                    <input type="text" name="machine[]" list="machineList" required>
+                </td>
+                <td><input type="text" name="code[]" placeholder="Enter code" required></td>
+                <td id="link${rowCount}">
+                    <div>-</div>
+                    <button type="button" class="link-btn" onclick="generateLink(${rowCount})">Generate Link</button>
+                </td>
+                <td>
+                    <button type="button" class="remove-btn" onclick="removeRow(this)"><i class="fas fa-trash"></i></button>
+                </td>
+            `;
+            
+            tbody.appendChild(newRow);
+            rowCount++;
+        }
+        
+        // Function to remove a row
+        function removeRow(button) {
+            const tbody = document.querySelector('#machineTable tbody');
+            // Don't remove if it's the last row
+            if (tbody.children.length > 1) {
+                const row = button.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+            } else {
+                alert("Table must have at least one row");
+            }
+        }
+        
+        // Function to generate a link based on machine (code optional)
+        function generateLink(rowId) {
+            const rowIndex = Array.from(document.querySelectorAll('#machineTable tbody tr')).findIndex(
+                row => row.querySelector(`td[id="link${rowId}"]`)
+            );
+            
+            if (rowIndex !== -1) {
+                const row = document.querySelectorAll('#machineTable tbody tr')[rowIndex];
+                const machine = row.querySelector('input[name="machine[]"]').value;
+                const code = row.querySelector('input[name="code[]"]').value;
+                
+                if (machine) {
+                    const linkCell = document.getElementById(`link${rowId}`);
+                    let dashboardUrl = `/machine_dashboard?machine=${encodeURIComponent(machine)}`;
+                    
+                    // Add code to URL if provided
+                    if (code) {
+                        dashboardUrl += `&code=${encodeURIComponent(code)}`;
+                    }
+                    
+                    linkCell.innerHTML = `
+                        <div><a href="${dashboardUrl}" target="_blank">${machine} Dashboard</a></div>
+                        <button type="button" class="link-btn" onclick="generateLink(${rowId})">Generate Link</button>
+                    `;
+                } else {
+                    alert("Please enter at least a machine name");
+                }
+            }
+        }
+    </script>
+</body>
+</html>

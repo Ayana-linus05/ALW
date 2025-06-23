@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Employee Management System</title>
+    <style>
+       
+    </style>
+    <link rel="stylesheet" href="static/styles.css" />
+</head>
+<body>
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="menu-header">≡ Menu</div>
+            <div class="menu-item">Dashboard</div>
+            <div class="menu-item">Employees</div>
+            <div class="menu-item">Shifts</div>
+            <div class="menu-item active">Reports</div>
+        </div>
+
+        <div class="header">
+            Employee Management System
+        </div>
+
+        <div class="content">
+            
+            <!-- Add New Report Section -->
+             <form id="add-report-form">
+                <div class="report-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Add New Report</h2>
+                        <span class="collapse-icon">▼</span>
+                    </div>
+                    <div class="section-divider"></div>
+                    <div class="section-content">
+                        <div class="form-row">
+                             <div class="form-group" style="position: relative;">
+                                <label class="form-label">Report To</label>
+                                <input type="text" name="employee" id="reportInput" class="form-input" placeholder="Select or search..." autocomplete="off" />
+                                <div id="reportSuggestions" class="suggestions-box" style="display: none;"></div>
+                                <span id="ddi" class="dropdown-icon" style="position: absolute; right: 10px; top: 38px; cursor: pointer; user-select: none;">^</span>
+                            </div>
+
+                            <div class="form-group" style="position: relative;">
+                                <label class="form-label">Method</label>
+                                <input type="text" name="method" id="methodInput" class="form-input" placeholder="Select or search..." autocomplete="off" />
+                                <div id="methodSuggestions" class="suggestions-box" style="display: none;"></div>
+                                <span id="ddi" class="dropdown-icon" style="position: absolute; right: 10px; top: 38px; cursor: pointer; user-select: none;">^</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">SUBMIT</button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Copy Report Section -->
+             <form id="copy-report-form">
+                <div class="report-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Copy Report</h2>
+                        <span class="collapse-icon" style="transform: rotate(0deg)">▼</span>
+                    </div>
+                    <div class="section-divider" style="display: none;"></div>
+                    <div class="section-content" style="display: none;">
+                        <div class="form-row">
+                            <!-- UPDATED Transfer To: searchable input with suggestions -->
+                            <div class="form-group" style="position: relative;">
+                                <label class="form-label">Transfer To</label>
+                                <input type="text" name="employee" id="transferInput" class="form-input" placeholder="Select or search..." autocomplete="off" />
+                                <div id="transferSuggestions" class="suggestions-box" style="display: none;"></div>
+                                <span id="ddi" class="dropdown-icon" style="position: absolute; right: 10px; top: 38px; cursor: pointer; user-select: none;">^</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Report To</label>
+                                <select name="manager" class="form-select">
+                                    <option>--Select Manager--</option>
+                                    <option>Manager 1</option>
+                                    <option>Manager 2</option>
+                                    <option>Manager 3</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="position: relative;">
+                                <label class="form-label">Method</label>
+                                <input type="text" name="method" id="copyMethodInput" class="form-input" placeholder="Select or search..." autocomplete="off" />
+                                <div id="copyMethodSuggestions" class="suggestions-box" style="display: none;"></div>
+                                <span id="ddi" class="dropdown-icon" style="position: absolute; right: 10px; top: 38px; cursor: pointer; user-select: none;">^</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-secondary">SUBMIT</button>
+                    </div>
+                </div>
+            </form>
+            <!--hellooo-->>
+           <!-- Search Container -->
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-box" placeholder="Search..." />
+            </div>
+
+            <!-- Employee Details Container -->
+             <div class="employee-container" id="employeeTable">
+                <div class="employee-header">
+                    <h2>Employees</h2>
+                    <button class="download-btn"> ⤓ Download Report</button>
+                </div>
+                <div class="section-divider"></div>
+                <div class="records-info"><span id="record-count">Records found: 0</span></div>
+                <div class="table-container">
+                    <table class="employee-table" id="employeeTable">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" /></th>
+                                <th>Sl No</th>
+                                <th>Employee ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Department</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <div id="no-records" class="empty-state" style="display: none;">
+                        <div class="empty-state-icon">😕</div>
+                        <div>No records found.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+     <div id="confirmationModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modal-title"></h3>
+            <div id="modal-body"></div>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+                <button id="modal-submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/script.js"></script>
+</body>
+</html>
