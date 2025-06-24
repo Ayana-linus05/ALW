@@ -5,102 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const recordCount = document.getElementById("record-count");
     const noRecords = document.getElementById("no-records");
 
-    const copyReportInput = document.getElementById("copyReportInput");
-    const copyReportBox = document.getElementById("copyReportSuggestions");
-    const copyReportIcon = document.getElementById("copyReportIcon");
-    let copyReportList = [];
-    let isCopyReportVisible = false;
-
-
-    fetch("/api/distinct-supervisors")
-    .then(res => res.json())
-    .then(data => {
-        copyReportList = data.map(emp => ({
-            id: emp.Emp_ID,
-            name: `${emp.Emp_ID} ${emp.First_Name} ${emp.Last_Name}`
-        }));
-    });
-
-
-    function showCopyReportSuggestions(filter = "") {
-    copyReportBox.innerHTML = "";
-    const matches = copyReportList.filter(emp =>
-        emp.name.toLowerCase().includes(filter.toLowerCase())
-    );
-
-    if (matches.length === 0) {
-        copyReportBox.style.display = "none";
-        isCopyReportVisible = false;
-        return;
-    }
-
-    matches.forEach(emp => {
-        const item = document.createElement("div");
-        item.className = "suggestion-item";
-        item.textContent = emp.name;
-
-        item.addEventListener("click", () => {
-            copyReportInput.value = emp.name;
-            copyReportInput.setAttribute("data-emp-id", emp.id);
-            copyReportInput.style.backgroundColor = "#45a049";
-            copyReportInput.style.color = "white";
-            copyReportBox.style.display = "none";
-            isCopyReportVisible = false;
-
-            if (copyReportIcon) {
-                copyReportIcon.style.color = "white";
-            }
-        });
-
-        copyReportBox.appendChild(item);
-    });
-
-    copyReportBox.style.display = "block";
-    isCopyReportVisible = true;
-}
-
-
-copyReportInput.addEventListener("input", () => {
-    showCopyReportSuggestions(copyReportInput.value.trim());
-    copyReportInput.style.backgroundColor = "";
-    copyReportInput.style.color = "";
-    if (copyReportIcon) copyReportIcon.style.color = "";
-});
-
-copyReportInput.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (isCopyReportVisible) {
-        copyReportBox.style.display = "none";
-        isCopyReportVisible = false;
-    } else {
-        showCopyReportSuggestions("");
-        copyReportInput.focus();
-    }
-});
-
-copyReportIcon.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (isCopyReportVisible) {
-        copyReportBox.style.display = "none";
-        isCopyReportVisible = false;
-    } else {
-        showCopyReportSuggestions("");
-        copyReportInput.focus();
-    }
-});
-
-document.addEventListener("click", (e) => {
-    if (!copyReportBox.contains(e.target)) {
-        copyReportBox.style.display = "none";
-        isCopyReportVisible = false;
-    }
-});
-
-
-
-
-
-
     // Method Inputs Setup (Add New Report & Copy Report)
     const methodInputs = [
         {
@@ -164,12 +68,17 @@ document.addEventListener("click", (e) => {
     fetch("/api/employee-names")
         .then(response => response.json())
         .then(data => {
-    transferList = reportList = data.map(emp => ({
-        id: emp.Emp_ID,
-        name: `${emp.Emp_ID} ${emp.First_Name} ${emp.Last_Name}`
-    }));
-})
-
+            reportList = data.map(emp => ({
+                id: emp.Emp_ID,
+                name: `${emp.Emp_ID} ${emp.First_Name} ${emp.Last_Name}`
+            }));
+        })
+        .then(data => {
+            reportList = data.map(emp => ({
+                id: emp.Emp_ID,
+                name: `${emp.Emp_ID} ${emp.First_Name} ${emp.Last_Name}`
+            }));
+        })
         .catch(err => {
             console.error("Error fetching employee names:", err);
         });
@@ -633,7 +542,7 @@ document.addEventListener("click", (e) => {
     // ====== Copy Report Form Submission Handler ======
     document.getElementById("copy-report-form").addEventListener("submit", function (e) {
         e.preventDefault();
-        const manager = copyReportInput.getAttribute("data-emp-id");
+        const manager = this.querySelector("select[name='manager']").value;
         const newmanager = transferInput.value.trim();
         const method = this.querySelector("input[name='method']").value;
         const employees = getSelectedEmployeeDetails();
