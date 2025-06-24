@@ -106,6 +106,22 @@ def submit_report():
 
     return jsonify({"message": "Report submitted successfully!"}), 200
 
+@app.route("/api/distinct-supervisors")
+def get_distinct_supervisors():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT DISTINCT e.Emp_ID, e.First_Name, e.Last_Name
+        FROM report_to r
+        JOIN employee e ON r.Sup_ID = e.Emp_ID
+        ORDER BY e.Emp_ID ASC
+    """)
+    supervisors = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(supervisors)
+
+ 
 
 
 if __name__ == "__main__":
