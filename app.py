@@ -121,6 +121,17 @@ def get_distinct_supervisors():
     conn.close()
     return jsonify(supervisors)
 
+
+@app.route("/api/subordinates/<int:sup_id>")
+def get_subordinates_for_supervisor(sup_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT Sub_ID FROM report_to WHERE Sup_ID = %s", (sup_id,))
+    subordinates = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify([row["Sub_ID"] for row in subordinates])
+
  
 
 

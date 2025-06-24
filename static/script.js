@@ -299,19 +299,46 @@ document.addEventListener("click", (e) => {
             item.className = "suggestion-item";
             item.textContent = emp.name;
 
-            item.addEventListener("click", () => {
-                reportInput.value = emp.name;
-                reportInput.setAttribute("data-emp-id", emp.id);
-                reportInput.style.backgroundColor = "#45a049";
-                reportInput.style.color = "white";
-                reportBox.style.display = "none";
-                isReportVisible = false;
+            item.addEventListener("click", async () => {
+    reportInput.value = emp.name;
+    reportInput.setAttribute("data-emp-id", emp.id);
+    reportInput.style.backgroundColor = "#45a049";
+    reportInput.style.color = "white";
+    reportBox.style.display = "none";
+    isReportVisible = false;
 
-                // Change report dropdown icon color to white on selection
-                if (reportIcon) {
-                    reportIcon.style.color = "white";
+    if (reportIcon) {
+        reportIcon.style.color = "white";
+    }
+
+    // Fetch already assigned Sub_IDs for this Sup_ID
+    try {
+        const res = await fetch(`/api/subordinates/${emp.id}`);
+        const subIds = await res.json();
+
+        // Clear all checkboxes and unhighlight first
+        const checkboxes = document.querySelectorAll(".employee-table tbody input[type='checkbox']");
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            cb.closest("tr").classList.remove("selected");
+        });
+
+        // Highlight and check matching Sub_IDs
+        subIds.forEach(id => {
+            document.querySelectorAll(".employee-table tbody tr").forEach(tr => {
+                const empIdCell = tr.querySelector(".employee-id");
+                if (empIdCell && empIdCell.textContent.trim() === String(id)) {
+                    const checkbox = tr.querySelector("input[type='checkbox']");
+                    checkbox.checked = true;
+                    tr.classList.add("selected");
                 }
             });
+        });
+    } catch (err) {
+        console.error("Error fetching subordinates:", err);
+    }
+});
+
 
             reportBox.appendChild(item);
         });
@@ -651,3 +678,4 @@ document.addEventListener("click", (e) => {
     });
 
 });
+//yes i am in github!!!
