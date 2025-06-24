@@ -72,15 +72,13 @@
                                 <span id="ddi" class="dropdown-icon" style="position: absolute; right: 10px; top: 38px; cursor: pointer; user-select: none;">^</span>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" style="position: relative;">
                                 <label class="form-label">Report To</label>
-                                <select name="manager" class="form-select">
-                                    <option>--Select Manager--</option>
-                                    <option>Manager 1</option>
-                                    <option>Manager 2</option>
-                                    <option>Manager 3</option>
-                                </select>
+                                <input type="text" name="manager" id="copyReportInput" class="form-input" placeholder="Select or search..." autocomplete="off" />
+                                <div id="copyReportSuggestions" class="suggestions-box" style="display: none;"></div>
+                                <span class="dropdown-icon" id="copyReportIcon" style="position: absolute; right: 10px; top: 38px; cursor: pointer; user-select: none;">^</span>
                             </div>
+
                         </div>
                         <div class="form-row">
                             <div class="form-group" style="position: relative;">
@@ -94,7 +92,7 @@
                     </div>
                 </div>
             </form>
-            <!--hellooo-->>
+            <!--hellooo-->
            <!-- Search Container -->
             <div class="search-container">
                 <input type="text" id="searchInput" class="search-box" placeholder="Search..." />
