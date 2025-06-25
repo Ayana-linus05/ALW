@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
     // ====== Basic Setup: Cache DOM elements & initialize variables ======
     const searchInput = document.getElementById("searchInput");
@@ -39,18 +40,46 @@ document.addEventListener("DOMContentLoaded", function () {
         item.className = "suggestion-item";
         item.textContent = emp.name;
 
-        item.addEventListener("click", () => {
-            copyReportInput.value = emp.name;
-            copyReportInput.setAttribute("data-emp-id", emp.id);
-            copyReportInput.style.backgroundColor = "#45a049";
-            copyReportInput.style.color = "white";
-            copyReportBox.style.display = "none";
-            isCopyReportVisible = false;
+        item.addEventListener("click", async () => {
+    copyReportInput.value = emp.name;
+    copyReportInput.setAttribute("data-emp-id", emp.id);
+    copyReportInput.style.backgroundColor = "#45a049";
+    copyReportInput.style.color = "white";
+    copyReportBox.style.display = "none";
+    isCopyReportVisible = false;
 
-            if (copyReportIcon) {
-                copyReportIcon.style.color = "white";
-            }
+    if (copyReportIcon) {
+        copyReportIcon.style.color = "white";
+    }
+
+    // === Highlight subordinates like in Add Report form ===
+    try {
+        const res = await fetch(`/api/subordinates/${emp.id}`);
+        const subIds = await res.json();
+
+        // Clear all checkboxes and highlights
+        const checkboxes = document.querySelectorAll(".employee-table tbody input[type='checkbox']");
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            cb.closest("tr").classList.remove("selected");
         });
+
+        // Highlight and check matching Sub_IDs
+        subIds.forEach(id => {
+            document.querySelectorAll(".employee-table tbody tr").forEach(tr => {
+                const empIdCell = tr.querySelector(".employee-id");
+                if (empIdCell && empIdCell.textContent.trim() === String(id)) {
+                    const checkbox = tr.querySelector("input[type='checkbox']");
+                    checkbox.checked = true;
+                    tr.classList.add("selected");
+                }
+            });
+        });
+    } catch (err) {
+        console.error("Error fetching subordinates:", err);
+    }
+});
+
 
         copyReportBox.appendChild(item);
     });
