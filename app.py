@@ -47,11 +47,11 @@ def get_employee_names():
 @app.route("/api/add-reporties", methods=["POST"])
 def add_reporties():
     data = request.get_json()
-    sub_ids = data.get("sub_ids")       # List of employee IDs
-    sup_id = data.get("sup_id")         # Manager's Emp_ID
-    method_name = data.get("method")    # Method name string
+    sub_ids = data.get("sub_ids")       # List of employee IDs (strings or ints)
+    sup_id = str(data.get("sup_id")).strip()
+    method_name = data.get("method")
 
-    if not (sub_ids and sup_id and method_name):
+    if not sub_ids or not sup_id or not method_name:
         return jsonify({"error": "Missing data"}), 400
 
     try:
@@ -65,21 +65,34 @@ def add_reporties():
             return jsonify({"error": "Invalid method"}), 400
         method_id = method_result[0]
 
-        # Insert each Sub_ID
+        # Fetch existing Sub_IDs for this Sup_ID
+        cursor.execute("SELECT Sub_ID FROM report_to WHERE Sup_ID = %s", (sup_id,))
+        existing_sub_ids = {str(row[0]).strip() for row in cursor.fetchall()}
+
+        # Insert only new Sub_IDs
+        inserted_count = 0
         for sub_id in sub_ids:
-            cursor.execute(
-                "INSERT INTO report_to (Sub_ID, Sup_ID, Method_ID) VALUES (%s, %s, %s)",
-                (sub_id, sup_id, method_id)
-            )
+            sub_id = str(sub_id).strip()
+            if sub_id not in existing_sub_ids:
+                cursor.execute(
+                    "INSERT INTO report_to (Sub_ID, Sup_ID, Method_ID) VALUES (%s, %s, %s)",
+                    (sub_id, sup_id, method_id)
+                )
+                inserted_count += 1
 
         conn.commit()
         cursor.close()
         conn.close()
-        return jsonify({"message": "Data inserted successfully"}), 200
+
+        return jsonify({
+            "message": f"{inserted_count} new employees added successfully.",
+            "inserted": inserted_count
+        }), 200
 
     except Exception as e:
-        print("DB Error:", e)
-        return jsonify({"error": "Database error"}), 500
+        print("Error in add-reporties:", e)
+        return jsonify({"error": "Server error"}), 500
+
 
 
 
