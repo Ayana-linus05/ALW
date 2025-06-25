@@ -132,6 +132,45 @@ def get_subordinates_for_supervisor(sup_id):
     conn.close()
     return jsonify([row["Sub_ID"] for row in subordinates])
 
+
+
+@app.route("/api/copy-report", methods=["POST"])
+def copy_report():
+    data = request.get_json()
+    sub_ids = data.get("employees")        # List of employee IDs
+    sup_id = data.get("newmanager")        # New Manager's Emp_ID
+    method_name = data.get("method")       # Method name string
+
+    if not (sub_ids and sup_id and method_name):
+        return jsonify({"error": "Missing data"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Get Method_ID from method name
+        cursor.execute("SELECT ID FROM method WHERE Method = %s", (method_name,))
+        method_result = cursor.fetchone()
+        if not method_result:
+            return jsonify({"error": "Invalid method"}), 400
+        method_id = method_result[0]
+
+        # Insert new report_to rows
+        for sub_id in sub_ids:
+            cursor.execute(
+                "INSERT INTO report_to (Sub_ID, Sup_ID, Method_ID) VALUES (%s, %s, %s)",
+                (sub_id, sup_id, method_id)
+            )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"message": "Copy report inserted successfully"}), 200
+
+    except Exception as e:
+        print("Error in copy-report:", e)
+        return jsonify({"error": "Database error"}), 500
+
  
 
 
