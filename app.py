@@ -182,8 +182,36 @@ def copy_report():
     conn.commit()
     cursor.close()
     conn.close()
-
     return jsonify({"message": "Report copied successfully."}), 200  # ← THIS IS CRUCIAL
+
+
+@app.route("/api/subordinates-by-method", methods=["GET"])
+def get_subordinates_by_method():
+    sup_id = request.args.get("sup_id")
+    method = request.args.get("method")
+
+    if not sup_id or not method:
+        return jsonify({"error": "Missing supervisor or method"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT ID FROM method WHERE Method = %s", (method,))
+    method_row = cursor.fetchone()
+    if not method_row:
+        return jsonify([])
+
+    method_id = method_row["ID"]
+
+    cursor.execute(
+        "SELECT Sub_ID FROM report_to WHERE Sup_ID = %s AND Method_ID = %s",
+        (sup_id, method_id)
+    )
+    subordinates = [row["Sub_ID"] for row in cursor.fetchall()]
+
+    cursor.close()
+    conn.close()
+    return jsonify(subordinates)
 
 
 

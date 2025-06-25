@@ -11,6 +11,37 @@ document.addEventListener("DOMContentLoaded", function () {
     const copyReportIcon = document.getElementById("copyReportIcon");
     let copyReportList = [];
     let isCopyReportVisible = false;
+    let selectedReportToId = null;
+    let selectedMethodName = null;
+
+    async function fetchAndHighlightSubordinates() {
+    if (!selectedReportToId || !selectedMethodName) return;
+
+    try {
+        const res = await fetch(`/api/subordinates-by-method?sup_id=${selectedReportToId}&method=${encodeURIComponent(selectedMethodName)}`);
+        const subIds = await res.json();
+
+        const checkboxes = document.querySelectorAll(".employee-table tbody input[type='checkbox']");
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            cb.closest("tr").classList.remove("selected");
+        });
+
+        subIds.forEach(id => {
+            document.querySelectorAll(".employee-table tbody tr").forEach(tr => {
+                const empIdCell = tr.querySelector(".employee-id");
+                if (empIdCell && empIdCell.textContent.trim() === String(id)) {
+                    const checkbox = tr.querySelector("input[type='checkbox']");
+                    checkbox.checked = true;
+                    tr.classList.add("selected");
+                }
+            });
+        });
+    } catch (err) {
+        console.error("Error fetching subordinates by method:", err);
+    }
+}
+
 
 
     fetch("/api/distinct-supervisors")
@@ -262,6 +293,10 @@ document.addEventListener("click", (e) => {
                 if (methodInputs[index].icon) {
                     methodInputs[index].icon.style.color = "white";
                 }
+                if (index === 0) {
+                    selectedMethodName = method;
+                    fetchAndHighlightSubordinates();
+                }
             });
 
             suggestionBox.appendChild(item);
@@ -336,36 +371,10 @@ document.addEventListener("click", (e) => {
     reportBox.style.display = "none";
     isReportVisible = false;
 
-    if (reportIcon) {
-        reportIcon.style.color = "white";
-    }
+    if (reportIcon) reportIcon.style.color = "white";
 
-    // Fetch already assigned Sub_IDs for this Sup_ID
-    try {
-        const res = await fetch(`/api/subordinates/${emp.id}`);
-        const subIds = await res.json();
-
-        // Clear all checkboxes and unhighlight first
-        const checkboxes = document.querySelectorAll(".employee-table tbody input[type='checkbox']");
-        checkboxes.forEach(cb => {
-            cb.checked = false;
-            cb.closest("tr").classList.remove("selected");
-        });
-
-        // Highlight and check matching Sub_IDs
-        subIds.forEach(id => {
-            document.querySelectorAll(".employee-table tbody tr").forEach(tr => {
-                const empIdCell = tr.querySelector(".employee-id");
-                if (empIdCell && empIdCell.textContent.trim() === String(id)) {
-                    const checkbox = tr.querySelector("input[type='checkbox']");
-                    checkbox.checked = true;
-                    tr.classList.add("selected");
-                }
-            });
-        });
-    } catch (err) {
-        console.error("Error fetching subordinates:", err);
-    }
+    selectedReportToId = emp.id;
+    await fetchAndHighlightSubordinates();  // trigger auto-select
 });
 
 
