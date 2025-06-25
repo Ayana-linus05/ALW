@@ -19,28 +19,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
         const res = await fetch(`/api/subordinates-by-method?sup_id=${selectedReportToId}&method=${encodeURIComponent(selectedMethodName)}`);
-        const subIds = await res.json();
+        let subIds = await res.json();
+        subIds = subIds.map(String);  // ✅ Convert all IDs to strings
 
-        const checkboxes = document.querySelectorAll(".employee-table tbody input[type='checkbox']");
-        checkboxes.forEach(cb => {
-            cb.checked = false;
-            cb.closest("tr").classList.remove("selected");
+        const allRows = Array.from(document.querySelectorAll(".employee-table tbody tr"));
+        const selectedRows = [];
+        const unselectedRows = [];
+
+        allRows.forEach(tr => {
+            const empIdCell = tr.querySelector(".employee-id");
+            const checkbox = tr.querySelector("input[type='checkbox']");
+            const empId = empIdCell?.textContent.trim();
+
+            if (empId && subIds.includes(empId)) {
+                checkbox.checked = true;
+                tr.classList.add("selected");
+                selectedRows.push(tr);
+            } else {
+                checkbox.checked = false;
+                tr.classList.remove("selected");
+                unselectedRows.push(tr);
+            }
         });
 
-        subIds.forEach(id => {
-            document.querySelectorAll(".employee-table tbody tr").forEach(tr => {
-                const empIdCell = tr.querySelector(".employee-id");
-                if (empIdCell && empIdCell.textContent.trim() === String(id)) {
-                    const checkbox = tr.querySelector("input[type='checkbox']");
-                    checkbox.checked = true;
-                    tr.classList.add("selected");
-                }
-            });
-        });
+        // Rebuild the table: selected rows on top
+        const tbody = document.querySelector(".employee-table tbody");
+        tbody.innerHTML = "";
+        [...selectedRows, ...unselectedRows].forEach(row => tbody.appendChild(row));
     } catch (err) {
         console.error("Error fetching subordinates by method:", err);
     }
 }
+
 
 
 
