@@ -643,12 +643,14 @@ document.addEventListener("click", (e) => {
                 sub_ids: data.employees.map(emp => emp.split("|")[0].trim())  // extract Emp_ID
             };
             await sendPostRequest('/api/add-reporties', payload);
-        } else if (type === "copy") {
+        } 
+        else if (type === "copy") {
             const payload = {
                 oldmanager: data.manager,
                 newmanager: data.newmanager,
                 method: methodName,
-                employees: data.employees.map(emp => emp.split("|")[0].trim())  // extract Emp_ID
+                employees: data.employees.map(emp => emp.split("|")[0].trim()),
+                transfer: data.transfer  // ✅ Add this line
             };
             await sendPostRequest('/api/copy-report', payload);
         }
@@ -688,19 +690,21 @@ document.addEventListener("click", (e) => {
 
     // ====== Copy Report Form Submission Handler ======
     document.getElementById("copy-report-form").addEventListener("submit", function (e) {
-        e.preventDefault();
-        const manager = copyReportInput.getAttribute("data-emp-id");
-        const newmanager = transferInput.value.trim();
-        const method = this.querySelector("input[name='method']").value;
-        const employees = getSelectedEmployeeDetails();
+    e.preventDefault();
+    const manager = copyReportInput.getAttribute("data-emp-id");
+    const newmanager = transferInput.getAttribute("data-emp-id");
+    const method = this.querySelector("input[name='method']").value;
+    const employees = getSelectedEmployeeDetails();
+    const transfer = document.getElementById("transferCheckbox").checked; // ✅ NEW LINE
 
-        if (manager === "--Select Manager--" || newmanager === "" || method === "" || employees.length === 0) {
-            alert("Please select Manager, Transfer To, Method and at least one employee.");
-            return;
-        }
+    if (!manager || !newmanager || method === "" || employees.length === 0) {
+        alert("Please select Manager, Transfer To, Method and at least one employee.");
+        return;
+    }
 
-        showModal("copy", { manager, newmanager, method, employees });
-    });
+    showModal("copy", { manager, newmanager, method, employees, transfer }); // ✅ PASS transfer
+});
+
     // ====== Modal Cancel Button Handler ======
     document.getElementById("modal-cancel").addEventListener("click", () => {
         document.getElementById("confirmationModal").style.display = "none";
