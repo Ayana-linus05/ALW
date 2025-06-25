@@ -23,29 +23,38 @@ document.addEventListener("DOMContentLoaded", function () {
         subIds = subIds.map(String);  // ✅ Convert all IDs to strings
 
         const allRows = Array.from(document.querySelectorAll(".employee-table tbody tr"));
-        const selectedRows = [];
-        const unselectedRows = [];
 
-        allRows.forEach(tr => {
-            const empIdCell = tr.querySelector(".employee-id");
-            const checkbox = tr.querySelector("input[type='checkbox']");
-            const empId = empIdCell?.textContent.trim();
+// ✅ Sort allRows by Emp_ID ascending
+allRows.sort((a, b) => {
+    const idA = parseInt(a.querySelector(".employee-id").textContent.trim());
+    const idB = parseInt(b.querySelector(".employee-id").textContent.trim());
+    return idA - idB;
+});
 
-            if (empId && subIds.includes(empId)) {
-                checkbox.checked = true;
-                tr.classList.add("selected");
-                selectedRows.push(tr);
-            } else {
-                checkbox.checked = false;
-                tr.classList.remove("selected");
-                unselectedRows.push(tr);
-            }
-        });
+const selectedRows = [];
+const unselectedRows = [];
 
-        // Rebuild the table: selected rows on top
-        const tbody = document.querySelector(".employee-table tbody");
-        tbody.innerHTML = "";
-        [...selectedRows, ...unselectedRows].forEach(row => tbody.appendChild(row));
+allRows.forEach(tr => {
+    const empIdCell = tr.querySelector(".employee-id");
+    const checkbox = tr.querySelector("input[type='checkbox']");
+    const empId = empIdCell?.textContent.trim();
+
+    if (empId && subIds.includes(empId)) {
+        checkbox.checked = true;
+        tr.classList.add("selected");
+        selectedRows.push(tr);
+    } else {
+        checkbox.checked = false;
+        tr.classList.remove("selected");
+        unselectedRows.push(tr);
+    }
+});
+
+// ✅ Final sorted display: selected (sorted) + unselected (sorted)
+const tbody = document.querySelector(".employee-table tbody");
+tbody.innerHTML = "";
+[...selectedRows, ...unselectedRows].forEach(row => tbody.appendChild(row));
+
     } catch (err) {
         console.error("Error fetching subordinates by method:", err);
     }
@@ -93,32 +102,51 @@ document.addEventListener("DOMContentLoaded", function () {
         copyReportIcon.style.color = "white";
     }
 
-    // === Highlight subordinates like in Add Report form ===
+        selectedReportToId = emp.id;
+
     try {
-        const res = await fetch(`/api/subordinates/${emp.id}`);
-        const subIds = await res.json();
+        const res = await fetch(`/api/subordinates?sup_id=${emp.id}`);
+        let subIds = await res.json();
+        subIds = subIds.map(String);
 
-        // Clear all checkboxes and highlights
-        const checkboxes = document.querySelectorAll(".employee-table tbody input[type='checkbox']");
-        checkboxes.forEach(cb => {
-            cb.checked = false;
-            cb.closest("tr").classList.remove("selected");
-        });
+        const allRows = Array.from(document.querySelectorAll(".employee-table tbody tr"));
 
-        // Highlight and check matching Sub_IDs
-        subIds.forEach(id => {
-            document.querySelectorAll(".employee-table tbody tr").forEach(tr => {
-                const empIdCell = tr.querySelector(".employee-id");
-                if (empIdCell && empIdCell.textContent.trim() === String(id)) {
-                    const checkbox = tr.querySelector("input[type='checkbox']");
-                    checkbox.checked = true;
-                    tr.classList.add("selected");
-                }
-            });
-        });
+// ✅ Sort allRows by Emp_ID ascending
+allRows.sort((a, b) => {
+    const idA = parseInt(a.querySelector(".employee-id").textContent.trim());
+    const idB = parseInt(b.querySelector(".employee-id").textContent.trim());
+    return idA - idB;
+});
+
+const selectedRows = [];
+const unselectedRows = [];
+
+allRows.forEach(tr => {
+    const empIdCell = tr.querySelector(".employee-id");
+    const checkbox = tr.querySelector("input[type='checkbox']");
+    const empId = empIdCell?.textContent.trim();
+
+    if (empId && subIds.includes(empId)) {
+        checkbox.checked = true;
+        tr.classList.add("selected");
+        selectedRows.push(tr);
+    } else {
+        checkbox.checked = false;
+        tr.classList.remove("selected");
+        unselectedRows.push(tr);
+    }
+});
+
+// ✅ Final sorted display: selected (sorted) + unselected (sorted)
+const tbody = document.querySelector(".employee-table tbody");
+tbody.innerHTML = "";
+[...selectedRows, ...unselectedRows].forEach(row => tbody.appendChild(row));
+
     } catch (err) {
         console.error("Error fetching subordinates:", err);
     }
+
+
 });
 
 
@@ -248,6 +276,9 @@ document.addEventListener("click", (e) => {
     fetch('/api/employees')
         .then(response => response.json())
         .then(data => {
+            // ✅ Sort employees by Emp_ID (ascending)
+        data.sort((a, b) => a.Emp_ID - b.Emp_ID);  // <-- ADD THIS LINE
+
             // Populate employee table with data
             data.forEach((emp, index) => {
                 const row = document.createElement("tr");

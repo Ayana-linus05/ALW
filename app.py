@@ -215,5 +215,21 @@ def get_subordinates_by_method():
 
 
 
+@app.route("/api/subordinates")
+def get_subordinates():
+    sup_id = request.args.get("sup_id")
+    if not sup_id:
+        return jsonify([])
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT Sub_ID FROM report_to WHERE Sup_ID = %s", (sup_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    return jsonify([row[0] for row in rows])
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=8080)
